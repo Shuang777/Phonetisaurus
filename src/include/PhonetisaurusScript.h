@@ -106,9 +106,11 @@ class PhonetisaurusScript {
   // The actual phoneticizer routine
   vector<PathData> Phoneticize (const string& word, int nbest = 1, 
 				int beam = 10000, float threshold = 99,
-				bool write_fsts = false) {
+				bool write_fsts = false, bool return_on_unseen = false) {
     VectorFst<StdArc>* fst = new VectorFst<StdArc> ();
-    vector<int> entry = tokenize2ints ((string*) &word, &delim_, isyms_);
+    vector<int> entry;
+    entry = tokenize2ints ((string*) &word, &delim_, isyms_, return_on_unseen);
+
     Entry2FSA (entry, fst, imax_, invimap_);
       
     fst->SetInputSymbols (isyms_);

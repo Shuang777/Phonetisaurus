@@ -37,11 +37,11 @@ M2MFstAligner::M2MFstAligner( ){
 }
 
 M2MFstAligner::M2MFstAligner (bool seq1_del, bool seq2_del, 
-			      unsigned int seq1_max, unsigned int seq2_max, 
-			      string seq1_sep, string seq2_sep, 
-			      string s1s2_sep, string eps, string skip,
-			      bool penalize, bool penalize_em, 
-			      bool restrict) 
+                              unsigned int seq1_max, unsigned int seq2_max, 
+                              string seq1_sep, string seq2_sep, 
+                              string s1s2_sep, string eps, string skip,
+                              bool penalize, bool penalize_em, 
+                              bool restrict) 
   : seq1_del (seq1_del), seq2_del (seq2_del), seq1_max (seq1_max),
     seq2_max (seq2_max), seq1_sep (seq1_sep), seq2_sep (seq2_sep),
     s1s2_sep (s1s2_sep), eps (eps), skip (skip), penalize (penalize),
@@ -72,7 +72,7 @@ M2MFstAligner::M2MFstAligner (bool seq1_del, bool seq2_del,
 }
 
 M2MFstAligner::M2MFstAligner (string model_file, bool penalize, 
-			      bool penalize_em, bool restrict)
+                              bool penalize_em, bool restrict)
   : penalize (penalize), penalize_em (penalize_em), restrict (restrict) {
   /*
     Initialize the aligner with a previously trained model.
@@ -85,10 +85,10 @@ M2MFstAligner::M2MFstAligner (string model_file, bool penalize,
        !siter.Done (); siter.Next ()) {
     LogArc::StateId q = siter.Value ();
     for( ArcIterator<VectorFst<LogArc> > aiter (*model, q); 
-	 !aiter.Done (); aiter.Next ()) {
+         !aiter.Done (); aiter.Next ()) {
       const LogArc& arc = aiter.Value ();
       alignment_model.insert (pair<LogArc::Label, LogWeight> 
-			      (arc.ilabel,arc.weight));
+                              (arc.ilabel,arc.weight));
     }
   }      
   isyms = (SymbolTable*)model->InputSymbols ();
@@ -147,21 +147,21 @@ void M2MFstAligner::expectation () {
     //Compute the normalized Gamma probabilities and 
     // update our running tally
     for (StateIterator<VectorFst<LogArc> > siter (fsas.at (i)); 
-	 !siter.Done (); siter.Next ()) {
+         !siter.Done (); siter.Next ()) {
       const LogArc::StateId q = siter.Value ();
       for (ArcIterator<VectorFst<LogArc> > aiter (fsas.at (i), q); 
-	   !aiter.Done (); aiter.Next ()) {
-	const LogArc&      arc = aiter.Value ();
-	const LogWeight& gamma = Divide (Times (Times (alpha [q], arc.weight), 
-					    beta [arc.nextstate]), beta [0]);
-	//Check for any BadValue results, otherwise add to the tally.
+           !aiter.Done (); aiter.Next ()) {
+        const LogArc&      arc = aiter.Value ();
+        const LogWeight& gamma = Divide (Times (Times (alpha [q], arc.weight), 
+                                            beta [arc.nextstate]), beta [0]);
+        //Check for any BadValue results, otherwise add to the tally.
         //We call this 'prev_alignment_model' which may seem misleading, but
         // this conventions leads to 'alignment_model' being the final version.
-	if (gamma.Value () == gamma.Value ()) {
-	  prev_alignment_model [arc.ilabel] = \
-	    Plus (prev_alignment_model [arc.ilabel], gamma);
-	  total = Plus (total, gamma);
-	}
+        if (gamma.Value () == gamma.Value ()) {
+          prev_alignment_model [arc.ilabel] = \
+            Plus (prev_alignment_model [arc.ilabel], gamma);
+          total = Plus (total, gamma);
+        }
       }
     }
     alpha.clear ();
@@ -279,7 +279,7 @@ float M2MFstAligner::maximization (bool lastiter) {
     //Normalize and iterate to the next model.  We apply it dynamically 
     // during the expectation step.
     for (it = prev_alignment_model.begin ();
-	 it != prev_alignment_model.end (); it++) {
+         it != prev_alignment_model.end (); it++) {
       alignment_model [(*it).first] = Divide ((*it).second, total);
       (*it).second = LogWeight::Zero ();
     }
@@ -290,29 +290,29 @@ float M2MFstAligner::maximization (bool lastiter) {
  
   for (unsigned int i = 0; i < fsas.size(); i++) {
     for (StateIterator<VectorFst<LogArc> > siter (fsas [i]); 
-	 !siter.Done (); siter.Next ()) {
+         !siter.Done (); siter.Next ()) {
       LogArc::StateId q = siter.Value ();
       for (MutableArcIterator<VectorFst<LogArc> > aiter (&fsas [i], q); 
-	   !aiter.Done (); aiter.Next ()) {
-	LogArc arc = aiter.Value ();
-	if (penalize_em == true) {
-	  LabelDatum* ld = &penalties [arc.ilabel];
-	  if (ld->lhs > 1 && ld->rhs > 1) {
-	    arc.weight = 99; 
-	  } else if (ld->lhsE == false && ld->rhsE == false) {
-	    arc.weight = arc.weight.Value () * ld->tot;
-	  }
-	  /*
-	    else{
-	    arc.weight = arc.weight.Value() * (ld->tot+10);
-	  }
-	  */
-	  if (arc.weight == LogWeight::Zero () || arc.weight != arc.weight)
-	    arc.weight = 99;
-	} else {
-	  arc.weight = alignment_model [arc.ilabel];
-	}
-	aiter.SetValue (arc);
+           !aiter.Done (); aiter.Next ()) {
+        LogArc arc = aiter.Value ();
+        if (penalize_em == true) {
+          LabelDatum* ld = &penalties [arc.ilabel];
+          if (ld->lhs > 1 && ld->rhs > 1) {
+            arc.weight = 99; 
+          } else if (ld->lhsE == false && ld->rhsE == false) {
+            arc.weight = arc.weight.Value () * ld->tot;
+          }
+          /*
+            else{
+            arc.weight = arc.weight.Value() * (ld->tot+10);
+          }
+          */
+          if (arc.weight == LogWeight::Zero () || arc.weight != arc.weight)
+            arc.weight = 99;
+        } else {
+          arc.weight = alignment_model [arc.ilabel];
+        }
+        aiter.SetValue (arc);
       }
     }
   }
@@ -346,75 +346,75 @@ void M2MFstAligner::Sequences2FST (VectorFst<LogArc>* fst, vector<string>* seq1,
 
       //Epsilon arcs for seq1
       if( seq1_del==true )
-	for( unsigned int l=1; l<=seq2_max; l++ ){
-	  if( j+l<=seq2->size() ){
-	    vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
-	    int is = isyms->AddSymbol(skip+s1s2_sep+vec2str(subseq2, seq2_sep));
-	    ostate = i*(seq2->size()+1) + (j+l);
-	    LogArc arc( is, is, 99, ostate );
-	    fst->AddArc( istate, arc );
-	    /*
-	    if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
-	      prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel,arc.weight) );
-	      _compute_penalties( arc.ilabel, 1, l, true, false );
-	    }else{
-	      prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
-	    }
-	    total = Plus( total, arc.weight );
-	    */
-	  }
-	}
+        for( unsigned int l=1; l<=seq2_max; l++ ){
+          if( j+l<=seq2->size() ){
+            vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
+            int is = isyms->AddSymbol(skip+s1s2_sep+vec2str(subseq2, seq2_sep));
+            ostate = i*(seq2->size()+1) + (j+l);
+            LogArc arc( is, is, 99, ostate );
+            fst->AddArc( istate, arc );
+            /*
+            if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
+              prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel,arc.weight) );
+              _compute_penalties( arc.ilabel, 1, l, true, false );
+            }else{
+              prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
+            }
+            total = Plus( total, arc.weight );
+            */
+          }
+        }
 
       //Epsilon arcs for seq2
       if( seq2_del==true )
-	for( unsigned int k=1; k<=seq1_max; k++ ){
-	  if( i+k<=seq1->size() ){
-	    vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
-	    int is = isyms->AddSymbol(vec2str(subseq1, seq1_sep)+s1s2_sep+skip);
-	    ostate = (i+k)*(seq2->size()+1) + j;
-	    LogArc arc( is, is, 99, ostate );
-	    fst->AddArc( istate, arc );
-	    /*
-	    if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
-	      prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel,arc.weight) );
-	      _compute_penalties( arc.ilabel, k, 1, false, true );
-	    }else{
-	      prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
-	    }
-	    total = Plus(total, arc.weight);
-	    */
-	  }
-	}
+        for( unsigned int k=1; k<=seq1_max; k++ ){
+          if( i+k<=seq1->size() ){
+            vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
+            int is = isyms->AddSymbol(vec2str(subseq1, seq1_sep)+s1s2_sep+skip);
+            ostate = (i+k)*(seq2->size()+1) + j;
+            LogArc arc( is, is, 99, ostate );
+            fst->AddArc( istate, arc );
+            /*
+            if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
+              prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel,arc.weight) );
+              _compute_penalties( arc.ilabel, k, 1, false, true );
+            }else{
+              prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
+            }
+            total = Plus(total, arc.weight);
+            */
+          }
+        }
 
       //All the other arcs
       for( unsigned int k=1; k<=seq1_max; k++ ){
-	for( unsigned int l=1; l<=seq2_max; l++ ){
-	  if( i+k<=seq1->size() && j+l<=seq2->size() ){
-	    vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
-	    string s1 = vec2str(subseq1, seq1_sep);
-	    vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
-	    string s2 = vec2str(subseq2, seq2_sep);
-	    //This says only 1-M and N-1 allowed, no M-N links!
-	    if( restrict==true && l>1 && k>1)
-	      continue;
-	    int is = isyms->AddSymbol(s1+s1s2_sep+s2);
-	    ostate = (i+k)*(seq2->size()+1) + (j+l);
-	    LogArc arc( is, is, LogWeight::One().Value()*(k+l), ostate );
-	    fst->AddArc( istate, arc );
-	    //During the initialization phase, just count non-eps transitions
-	    //We currently initialize to uniform probability so there is also 
+        for( unsigned int l=1; l<=seq2_max; l++ ){
+          if( i+k<=seq1->size() && j+l<=seq2->size() ){
+            vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
+            string s1 = vec2str(subseq1, seq1_sep);
+            vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
+            string s2 = vec2str(subseq2, seq2_sep);
+            //This says only 1-M and N-1 allowed, no M-N links!
+            if( restrict==true && l>1 && k>1)
+              continue;
+            int is = isyms->AddSymbol(s1+s1s2_sep+s2);
+            ostate = (i+k)*(seq2->size()+1) + (j+l);
+            LogArc arc( is, is, LogWeight::One().Value()*(k+l), ostate );
+            fst->AddArc( istate, arc );
+            //During the initialization phase, just count non-eps transitions
+            //We currently initialize to uniform probability so there is also 
             // no need to tally anything here.
-	    /*
-	    if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
-	      prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel, arc.weight) );
-	      _compute_penalties( arc.ilabel, k, l, false, false );
-	    }else{
-	      prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
-	    }
-	    total = Plus( total, arc.weight );
-	    */
-	  }
-	}
+            /*
+            if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
+              prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel, arc.weight) );
+              _compute_penalties( arc.ilabel, k, l, false, false );
+            }else{
+              prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
+            }
+            total = Plus( total, arc.weight );
+            */
+          }
+        }
       }
 
     }
@@ -433,22 +433,22 @@ void M2MFstAligner::Sequences2FST (VectorFst<LogArc>* fst, vector<string>* seq1,
     for( ArcIterator<VectorFst<LogArc> > aiter(*fst, q); !aiter.Done(); aiter.Next() ){
       const LogArc& arc = aiter.Value();
       if( prev_alignment_model.find(arc.ilabel)==prev_alignment_model.end() ){
-	prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel, arc.weight) );
-	string sym = isyms->Find(arc.ilabel);
-	size_t del = sym.find("}");
-	size_t chu = sym.find("|");
-	int k=1; int l=1;
+        prev_alignment_model.insert( pair<LogArc::Label,LogWeight>(arc.ilabel, arc.weight) );
+        string sym = isyms->Find(arc.ilabel);
+        size_t del = sym.find("}");
+        size_t chu = sym.find("|");
+        int k=1; int l=1;
 
-	if( chu!=string::npos ){
-	  if( chu<del )
-	    k += 1;
-	  else
-	    l += 1;
-	}
+        if( chu!=string::npos ){
+          if( chu<del )
+            k += 1;
+          else
+            l += 1;
+        }
 
-	_compute_penalties( arc.ilabel, k, l, false, false );
+        _compute_penalties( arc.ilabel, k, l, false, false );
       }else{
-	prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
+        prev_alignment_model[arc.ilabel] = Plus(prev_alignment_model[arc.ilabel],arc.weight);
       }
       total = Plus( total, arc.weight );
     }
@@ -473,47 +473,47 @@ void M2MFstAligner::Sequences2FSTNoInit( VectorFst<LogArc>* fst, vector<string>*
 
       //Epsilon arcs for seq1
       if( seq1_del==true )
-	for( unsigned int l=1; l<=seq2_max; l++ ){
-	  if( j+l<=seq2->size() ){
-	    vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
-	    int is = isyms->Find(skip+s1s2_sep+vec2str(subseq2, seq2_sep));
-	    ostate = i*(seq2->size()+1) + (j+l);
-	    LogArc arc( is, is, alignment_model[is], ostate );
-	    _compute_penalties( arc.ilabel, 1, l, true, false );
-	    fst->AddArc( istate, arc );
-	  }
-	}
+        for( unsigned int l=1; l<=seq2_max; l++ ){
+          if( j+l<=seq2->size() ){
+            vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
+            int is = isyms->Find(skip+s1s2_sep+vec2str(subseq2, seq2_sep));
+            ostate = i*(seq2->size()+1) + (j+l);
+            LogArc arc( is, is, alignment_model[is], ostate );
+            _compute_penalties( arc.ilabel, 1, l, true, false );
+            fst->AddArc( istate, arc );
+          }
+        }
 
       //Epsilon arcs for seq2
       if( seq2_del==true )
-	for( unsigned int k=1; k<=seq1_max; k++ ){
-	  if( i+k<=seq1->size() ){
-	    vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
-	    int is = isyms->Find(vec2str(subseq1, seq1_sep)+s1s2_sep+skip);
-	    ostate = (i+k)*(seq2->size()+1) + j;
-	    LogArc arc( is, is, alignment_model[is], ostate );
-	    _compute_penalties( arc.ilabel, k, 1, false, true );
-	    fst->AddArc( istate, arc );
-	  }
-	}
+        for( unsigned int k=1; k<=seq1_max; k++ ){
+          if( i+k<=seq1->size() ){
+            vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
+            int is = isyms->Find(vec2str(subseq1, seq1_sep)+s1s2_sep+skip);
+            ostate = (i+k)*(seq2->size()+1) + j;
+            LogArc arc( is, is, alignment_model[is], ostate );
+            _compute_penalties( arc.ilabel, k, 1, false, true );
+            fst->AddArc( istate, arc );
+          }
+        }
 
       //All the other arcs
       for( unsigned int k=1; k<=seq1_max; k++ ){
-	for( unsigned int l=1; l<=seq2_max; l++ ){
-	  if( i+k<=seq1->size() && j+l<=seq2->size() ){
-	    vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
-	    string s1 = vec2str(subseq1, seq1_sep);
-	    vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
-	    string s2 = vec2str(subseq2, seq2_sep);
-	    if( restrict==true && l>1 && k>1)
-	      continue;
-	    int is = isyms->Find(s1+s1s2_sep+s2);
-	    ostate = (i+k)*(seq2->size()+1) + (j+l);
-	    LogArc arc( is, is, alignment_model[is], ostate );
-	    _compute_penalties( arc.ilabel, k, l, false, false );
-	    fst->AddArc( istate, arc );
-	  }
-	}
+        for( unsigned int l=1; l<=seq2_max; l++ ){
+          if( i+k<=seq1->size() && j+l<=seq2->size() ){
+            vector<string> subseq1( seq1->begin()+i, seq1->begin()+i+k );
+            string s1 = vec2str(subseq1, seq1_sep);
+            vector<string> subseq2( seq2->begin()+j, seq2->begin()+j+l );
+            string s2 = vec2str(subseq2, seq2_sep);
+            if( restrict==true && l>1 && k>1)
+              continue;
+            int is = isyms->Find(s1+s1s2_sep+s2);
+            ostate = (i+k)*(seq2->size()+1) + (j+l);
+            LogArc arc( is, is, alignment_model[is], ostate );
+            _compute_penalties( arc.ilabel, k, l, false, false );
+            fst->AddArc( istate, arc );
+          }
+        }
       }
 
     }

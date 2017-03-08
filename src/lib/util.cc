@@ -108,19 +108,24 @@ vector<string> tokenize_entry (string* testword, string* sep,
 }
 
 vector<int> tokenize2ints (string* testword, string* sep, 
-			   const SymbolTable* syms) {
+			   const SymbolTable* syms, bool return_on_unseen) {
   vector<string> tokens = tokenize_utf8_string (testword, sep);
   vector<int> entry;
+  bool has_unseen = false;
   for (unsigned int i=0; i<tokens.size(); i++) {
     int label = syms->Find (tokens[i]);
-    if (label == -1)
+    if (label == -1) {
       cerr << "Symbol: '" << tokens[i]
            << "' not found in input symbols table." << endl
            << "Mapping to null..." << endl;
+      has_unseen = true;
+    }
     else
       entry.push_back (label);
   }
-
+  if (return_on_unseen && has_unseen)
+    entry.clear();
+  
   return entry;
 }
 

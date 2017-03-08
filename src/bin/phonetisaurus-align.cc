@@ -37,8 +37,8 @@ using namespace fst;
 
 
 int load_input_file (M2MFstAligner* aligner, string input_file,
-		     string delim, string s1_char_delim,
-		     string s2_char_delim, bool init=false) {
+                     string delim, string s1_char_delim,
+                     string s2_char_delim, bool init=false) {
   ifstream infile (input_file.c_str ());
   string line;
   int lines = 0;
@@ -51,15 +51,15 @@ int load_input_file (M2MFstAligner* aligner, string input_file,
         continue;
       vector<string> tokens = tokenize_utf8_string (&line, &delim);
       vector<string> seq1   = tokenize_utf8_string (&tokens.at (0),
-						    &s1_char_delim);
+                                                    &s1_char_delim);
       vector<string> seq2;
       if (tokens.size() > 1) {
         seq2 = tokenize_utf8_string (&tokens.at (1), &s2_char_delim);
       }
       if (init == false)
-	aligner->entry2alignfst (seq1, seq2);
+        aligner->entry2alignfst (seq1, seq2);
       else
-	aligner->entry2alignfstnoinit (seq1, seq2, 1, line);
+        aligner->entry2alignfstnoinit (seq1, seq2, 1, line);
       lines++;
     }
     infile.close ();
@@ -73,19 +73,19 @@ int load_input_file (M2MFstAligner* aligner, string input_file,
 }
 
 void write_alignments (M2MFstAligner* aligner, string ofile_name,
-		       StdArc::Weight threshold, int nbest,
-		       bool fb, bool penalize) {
+                       StdArc::Weight threshold, int nbest,
+                       bool fb, bool penalize) {
   /* 
      Write the raw alignments to a file in text-based corpus format. 
 
      NOTE: Although N-best and other pruning strategies are supported,
            the final format is that of a standard text corpus.  All relative
-	   token and pronunciation scores will be stripped.  In general
-	   this means that, unless you are very lucky with your combined 
-	   pruning strategy the un-ranked N-best hypotheses will result in a 
-	   lower-quality joint N-gram model.
+           token and pronunciation scores will be stripped.  In general
+           this means that, unless you are very lucky with your combined 
+           pruning strategy the un-ranked N-best hypotheses will result in a 
+           lower-quality joint N-gram model.
 
-	   This approach is best used with simple 1-best.
+           This approach is best used with simple 1-best.
   */
 
   //Build us a lattice pruner
@@ -121,20 +121,20 @@ void write_alignments (M2MFstAligner* aligner, string ofile_name,
       IdentityPathFilter<StdArc> path_filter;
 
       ShortestPathOptions<StdArc, AutoQueue<StdArc::StateId>,
-			  AnyArcFilter<StdArc> >
-	opts (&state_queue, arc_filter, nbest, false, false,
-	      kDelta, false, weight_threshold,
-	      state_threshold);
+                          AnyArcFilter<StdArc> >
+        opts (&state_queue, arc_filter, nbest, false, false,
+              kDelta, false, weight_threshold,
+              state_threshold);
       ShortestPathSpecialized (*tfst, &ofst, &distance,
-			       &path_filter, 10000, opts);
+                               &path_filter, 10000, opts);
       for (size_t i = 0; i < path_filter.ordered_paths.size (); i++) {
-	const vector<int>& path = path_filter.ordered_paths[i];
-	for (size_t j = 0; j < path.size (); j++) {
-	  ofile << aligner->isyms->Find (path [j]);
-	  if (j < path.size () - 1)
-	    ofile << " ";
-	}
-	ofile << "\n";
+        const vector<int>& path = path_filter.ordered_paths[i];
+        for (size_t j = 0; j < path.size (); j++) {
+          ofile << aligner->isyms->Find (path [j]);
+          if (j < path.size () - 1)
+            ofile << " ";
+        }
+        ofile << "\n";
       }
     }
     delete tfst;
@@ -144,9 +144,9 @@ void write_alignments (M2MFstAligner* aligner, string ofile_name,
 }
 
 void compileNBestFarArchive (M2MFstAligner* aligner,
-			     vector<VectorFst<LogArc> > *fsts,
-			     string far_name, StdArc::Weight threshold,
-			     int nbest, bool fb, bool penalize) {
+                             vector<VectorFst<LogArc> > *fsts,
+                             string far_name, StdArc::Weight threshold,
+                             int nbest, bool fb, bool penalize) {
   /*
     Generic method for compiling an FstARchive from a vector of FST lattices.
     The 'nbest' and 'threshold' parameters may be used to heuristically prune
@@ -192,7 +192,7 @@ void compileNBestFarArchive (M2MFstAligner* aligner,
     //  The .far result here will be identical to the non-lattice 'write_alignments()'.
     Push<LogArc, REWEIGHT_TO_FINAL> (*lfst, pfst, kPushWeights);
     for (StateIterator<VectorFst<LogArc> > siter (*pfst);
-	 !siter.Done (); siter.Next ()) {
+         !siter.Done (); siter.Next ()) {
       size_t v = siter.Value();
       if (pfst->Final(v) != LogArc::Weight::Zero ()) {
         pfst->SetFinal (v,LogArc::Weight::One ());
@@ -269,10 +269,10 @@ int main( int argc, char* argv[] ){
   
   if( FLAGS_load_model==true ){
     aligner = *(new M2MFstAligner (FLAGS_model_file, FLAGS_penalize,
-				   FLAGS_penalize_em, FLAGS_restrict));
+                                   FLAGS_penalize_em, FLAGS_restrict));
     switch (load_input_file (&aligner, FLAGS_input, FLAGS_delim,
-			     FLAGS_s1_char_delim, FLAGS_s2_char_delim,
-			     FLAGS_load_model)) {
+                             FLAGS_s1_char_delim, FLAGS_s2_char_delim,
+                             FLAGS_load_model)) {
     case 0:
       cerr << "Please provide a valid input file." << endl;
     case -1:
@@ -280,15 +280,15 @@ int main( int argc, char* argv[] ){
     }
   }else{
     aligner = *(new M2MFstAligner (FLAGS_seq1_del, FLAGS_seq2_del,
-				   FLAGS_seq1_max, FLAGS_seq2_max,
-				   FLAGS_seq1_sep, FLAGS_seq2_sep,
-				   FLAGS_s1s2_sep, FLAGS_eps, FLAGS_skip,
-				   FLAGS_penalize, FLAGS_penalize_em,
-				   FLAGS_restrict
-				   ));
+                                   FLAGS_seq1_max, FLAGS_seq2_max,
+                                   FLAGS_seq1_sep, FLAGS_seq2_sep,
+                                   FLAGS_s1s2_sep, FLAGS_eps, FLAGS_skip,
+                                   FLAGS_penalize, FLAGS_penalize_em,
+                                   FLAGS_restrict
+                                   ));
     switch (load_input_file (&aligner, FLAGS_input, FLAGS_delim,
-			     FLAGS_s1_char_delim, FLAGS_s2_char_delim,
-			     FLAGS_load_model)) {
+                             FLAGS_s1_char_delim, FLAGS_s2_char_delim,
+                             FLAGS_load_model)) {
     case 0:
       cerr << "Please provide a valid input file." << endl;
     case -1:
@@ -310,20 +310,20 @@ int main( int argc, char* argv[] ){
   }
 
   StdArc::Weight pthresh = FLAGS_pthresh == -99.0 
-    ? LogWeight::Zero().Value()			  
+    ? LogWeight::Zero().Value()                          
     : FLAGS_pthresh;
   if (FLAGS_write_model.compare ("") != 0) {
     cerr << "Writing alignment model in OpenFst format to file: "
-	 << FLAGS_write_model << endl;
+         << FLAGS_write_model << endl;
     aligner.write_model (FLAGS_write_model);
   }
   
   if (FLAGS_lattice == true)
     compileNBestFarArchive (&aligner, &aligner.fsas, FLAGS_ofile, pthresh,
-			    FLAGS_nbest, FLAGS_fb, FLAGS_penalize);
+                            FLAGS_nbest, FLAGS_fb, FLAGS_penalize);
   else
     write_alignments (&aligner, FLAGS_ofile, pthresh, FLAGS_nbest,
-		      FLAGS_fb, FLAGS_penalize);
+                      FLAGS_fb, FLAGS_penalize);
 
   return 1;
 }

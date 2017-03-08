@@ -57,11 +57,11 @@ void PrintPathData (const vector<PathData>& results, string FLAGS_word,
 void EvaluateWordlist (PhonetisaurusScript& decoder, vector<string> corpus,
 		       int FLAGS_beam, int FLAGS_nbest, bool FLAGS_reverse,
 		       string FLAGS_skip, double FLAGS_thresh, string FLAGS_gsep,
-		       bool FLAGS_write_fsts, bool FLAGS_print_scores) {
+		       bool FLAGS_write_fsts, bool FLAGS_print_scores, bool FLAGS_return_on_unseen) {
   for (int i = 0; i < corpus.size (); i++) {
     vector<PathData> results = decoder.Phoneticize (corpus [i], FLAGS_nbest,
 						    FLAGS_beam, FLAGS_thresh,
-						    FLAGS_write_fsts);
+						    FLAGS_write_fsts, FLAGS_return_on_unseen);
     PrintPathData (results, corpus [i], decoder.osyms_, FLAGS_print_scores);
   }
 }
@@ -109,6 +109,7 @@ DEFINE_double (thresh, 99.0, "N-best comparison threshold.");
 DEFINE_bool   (write_fsts, false, "Write the output FSTs for debugging.");
 DEFINE_bool   (reverse, false, "Reverse input word.");
 DEFINE_bool   (print_scores, true, "Print scores in output.");
+DEFINE_bool   (return_on_unseen, false, "Return none if contains unseen graphemes.");
 
 int main (int argc, char* argv []) {
   cerr << "GitRevision: " << GIT_REVISION << endl;
@@ -166,7 +167,7 @@ int main (int argc, char* argv []) {
       PhonetisaurusScript decoder (FLAGS_model, FLAGS_gsep);
       EvaluateWordlist (decoder, corpus, FLAGS_beam, FLAGS_nbest,
 			FLAGS_reverse, FLAGS_skip, FLAGS_thresh,
-			FLAGS_gsep, FLAGS_write_fsts, FLAGS_print_scores);
+			FLAGS_gsep, FLAGS_write_fsts, FLAGS_print_scores, FLAGS_return_on_unseen);
     }
   } else {
     PhonetisaurusScript decoder (FLAGS_model, FLAGS_gsep);
